@@ -59,7 +59,7 @@ class NJE:
         self.server_sec = ''
         self.FCS        = ''
         #self.OIP        = socket.inet_aton(host)
-        self.R          = "\x00"
+        self.R          = b"\x00"
         self.node       = 0
         self.password   = password
         self.own_node   = chr(0x01) # Node is default 1. Can be changed to anything
@@ -177,6 +177,7 @@ class NJE:
 
     def EbcdicToAscii(self, s):
         ''' Converts EBCDIC to UTF-8 '''
+        constructed = s
         if(type(s) == bytes):
             constructed = constructed.decode("EBCDIC-CP-BE")
         return constructed.encode('utf-8')
@@ -218,9 +219,9 @@ class NJE:
         nje_packet = (self.TYPE + self.RHOST + self.RIP + self.OHOST +
                       self.OIP + self.R )
 
-        self.msg("Sending  >> TYPE: " + self.EbcdicToAscii(self.TYPE) +
-                 " RHOST: " + self.EbcdicToAscii(self.RHOST) +
-                 " OHOST: " + self.EbcdicToAscii(self.OHOST))
+        self.msg(b"Sending  >> TYPE: " + self.EbcdicToAscii(self.TYPE) +
+                 b" RHOST: " + self.EbcdicToAscii(self.RHOST) +
+                 b" OHOST: " + self.EbcdicToAscii(self.OHOST))
 
         self.sendData(nje_packet)
 
@@ -233,18 +234,17 @@ class NJE:
         bRIP   = buff[16:20]
         bOHOST = self.EbcdicToAscii(buff[20:28])
         bOIP   = buff[28:32]
-        bR     = struct.unpack("b", buff[32])[0]
+        bR     = struct.unpack("b", buff[32:33])[0]
 
 
-        self.msg("Response << TYPE: " + bTYPE + " RHOST: " + bRHOST + " OHOST: " + bRHOST + " R: " + str(bR))
+        self.msg("Response << TYPE: " + bTYPE.decode("utf-8") + " RHOST: " + bRHOST.decode("utf-8") + " OHOST: " + bRHOST.decode("utf-8") + " R: " + str(bR))
 
         if bR == 4:
-            print ("[!] Incorrect RHOST (" + self.EbcdicToAscii(self.RHOST).strip() + ") for OHOST: " + self.EbcdicToAscii(self.OHOST).strip() + \
-                  "\n[!] Or RHOST already connected to OHOST")
+            print ("[!] Incorrect RHOST (", self.EbcdicToAscii(self.RHOST).strip(),  ") for OHOST: ", self.EbcdicToAscii(self.OHOST).strip(), "\n[!] Or RHOST already connected to OHOST")
             self.disconnect()
             return False
         elif bR == 1:
-            print ("[!] Incorrect RHOST (" + self.EbcdicToAscii(self.RHOST).strip() + ") and/or OHOST (" + self.EbcdicToAscii(self.OHOST).strip() + ")")
+            print ("[!] Incorrect RHOST (", self.EbcdicToAscii(self.RHOST).strip(), ") and/or OHOST (", self.EbcdicToAscii(self.OHOST).strip(), ")")
             self.disconnect()
             return False
         elif bR != 0:
@@ -516,14 +516,14 @@ class NJE:
         if self.offline:
             self.msg('Offline Mode: Not Retrieving data')
             return
-        data = ''
+        data = b''
         r, w, e = select([self.sock], [], [])
         for i in r:
             try:
                 buf = self.sock.recv(256)
                 data += buf
 
-                while( buf != ''):
+                while( buf):
                     buf = self.sock.recv(256)
                     data += buf
                 if(buf == ''):
@@ -601,7 +601,7 @@ class NJE:
 
     def phex(self, stuff):
         hexed = binascii.hexlify(bytearray(stuff))
-        return ' '.join(hexed[i:i+2] for i in range(0, len(hexed), 2))
+        return ' '.join(hexed[i:i+2].decode("utf-8") for i in range(0, len(hexed), 2))
 
     def process_RCB(self):
         # Record Control Byte                  (Pg 124)
@@ -1656,8 +1656,13 @@ def test():
         password = sys.argv[5]
 
     nje = NJE(ohost,rhost)
-    nje.set_debuglevel(debuglevel)
-    t = nje.signon(host=host,port=port, timeout=2, password=password)
+    nje.set_debuglevel(1)
+    t = nje.session(host=host, port=port, timeout=2, password=password)
+
+    if t:
+        nje.dumbClient()
+    else:
+        print ("[!] Error, unable to connect!")
 
     if t:
         print ("[+] Connection Successful")
