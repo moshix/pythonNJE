@@ -80,7 +80,7 @@ Now we need to connect to a mainframe:
 connected = nje.session(host="3.1.33.7",port=175)
 
 if not connected:
-   print "That didn't work"
+   print ("That didn't work")
    return
 ```
 the `session()` function will return `True` if the connection is successful and `False` if it failed for any reason. This script tries to initiate an SSL connection first and falls back to unencrypted if that fails.
@@ -93,7 +93,7 @@ Once we're connected we can issue commands, send messages and/or submit JCL:
 ```python
 #send a command
 Reply = nje.sendCommand(args.command)
-print Reply
+print (Reply)
 
 #send a message to someone
 nje.sendMessage("MESS WITH THE BEST DIE LIKE THE REST", "plague")
@@ -115,17 +115,17 @@ nje.sendJCL("cookie.jcl", "plague")
 #Print any messages
 for record in nje.getNMR():
    if 'NMRUSER' in record:
-      print "[+] User Message"
-      print "[+] To User:", record['NMRUSER']
-      print "[+] Message:", record['NMRMSG']
+      print ("[+] User Message")
+      print ("[+] To User:", record['NMRUSER'])
+      print ("[+] Message:", record['NMRMSG'])
    elif 'NMRMSG' in record :
-      print "[+] Message:", record['NMRMSG']
+      print ("[+] Message:", record['NMRMSG'])
 
 #Prints any data we've received
-print "[+] Records in SYSOUT:"
+print ("[+] Records in SYSOUT:")
 for record in nje.getSYSOUT():
     if 'Record' in record:
-        print record['Record']
+        print (record['Record'])
 ```
 ## Offline Analysis
 Using Wireshark you can easily capture NJE records flying across the network. Unfortunately there's currently no formatting available for NJE (future project perhaps). Using this library however, and the raw data extracted from Wireshark you can assess what was sent across the wires. You can use the **set_offline()**
