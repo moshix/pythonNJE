@@ -2,8 +2,6 @@
 # Provided extracted data from wireshark processes the packet as a real NJE packet
 # and displays the information/contents to stdout
 
-# By Philip Young (c) 2016
-# MIT License
 
 import njelib
 import sys
