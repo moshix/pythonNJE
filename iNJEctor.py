@@ -3,10 +3,7 @@
 ## NJE NMR Command Sender
 ## Allows for sending commands to z/OS NJE
 ## requires OHOST and RHOST
-#
-## Created by Soldier of Fortran for DEFCON 23 2015
-#
-#########
+
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
