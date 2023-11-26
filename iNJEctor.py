@@ -4,8 +4,6 @@
 # as the user provided as the second argument
 # and displays the information/contents to stdout
 
-# By Philip Young (c) 2016
-# MIT License
 
 import njelib
 import sys
